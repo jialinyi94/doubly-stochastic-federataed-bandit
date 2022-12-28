@@ -1,6 +1,7 @@
 import wandb
 import torch
 import numpy as np
+import networkx as nx
 import federatedbandit.agent as fba
 import federatedbandit.env as fbe
 from PIL import Image
@@ -32,17 +33,25 @@ def main(config):
     else:
         raise NotImplementedError("The "+env+" environment has not been implemented.")
 
-    # Specify gossip matrix
-    if config['gossip'] == "COMPLETE":
-        gossip = torch.ones( # complete random communication
-                [config['n_agents'], config['n_agents']], device=config['device']
-            ) / config['n_agents']
-    elif config['gossip'] == "NONE":
-        gossip = torch.eye( # no communication
-                config['n_agents'], device=config['device']
-            )
+    # Specify communcation network
+    if config['network'] == 'COMPLETE':
+        graph = nx.complete_graph(config['n_agents'])
+    elif config['network'] == 'NONE':
+        graph = nx.from_numpy_array(
+            np.zeros([
+                config['n_agents'], config['n_agents']
+            ])
+        )
     else:
-        raise NotImplementedError("The "+env+" mechanism has not been implemented.")
+        raise NotImplementedError("The "+config['network']+" network has not been implemented.")
+    comm_net = fba.CommNet(graph)
+
+    # Specify the gossip
+    if config['gossip'] == 'MaxDegree':
+        gossip_numpy = comm_net.max_deg_gossip()
+    else:
+        raise NotImplementedError("The "+config['gossip']+" mechanism has not been implemented.")
+    gossip = torch.tensor(gossip_numpy, device=config['device'])
 
     # Create FedExp3
     agent = fba.FedExp3(
@@ -94,21 +103,20 @@ def main(config):
     if config['WANDB']:
         wandb.log({"visual_probs": prob_imgs})
         wandb.finish()
-    
-    print(cumu_loss)
 
 if __name__ == "__main__":
     config = dict(
         proj = 'FedExp3',
         env = 'HomoBandit-0',
-        gossip = 'NONE',
+        network = 'NONE',
+        gossip = 'MaxDegree',
         n_agents = 10,
         n_arms = 50,                 
         horizon = 4000,                  
         lr = .1,
         gamma = 0.01,
-        seed = 0,
-        WANDB = False
+        seed = 1,
+        WANDB = True
     )
 
     main(config)
