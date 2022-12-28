@@ -1,0 +1,33 @@
+import torch
+col_softmax = torch.nn.Softmax(dim=1)
+
+class FedExp3:
+    def __init__(self, n_agents, n_arms, W, lr, expr_scheduler, device) -> None:
+        self.Z = torch.zeros([n_agents, n_arms], device=device)
+        self.W = W
+        self.lr = lr
+        self.expr_scheduler = expr_scheduler
+        self.X0 = torch.ones([n_agents, n_arms], device=device) / n_arms
+        self.device = device
+
+    def action(self, rng):
+        K = self.Z.shape[-1]
+        X = col_softmax(-self.lr*self.Z)
+        gamma = next(self.expr_scheduler)
+        P = (1 - gamma) * X + gamma * self.X0
+        A = torch.multinomial(P, num_samples=1, generator=rng)
+        A_one_hot = torch.nn.functional.one_hot(A, num_classes=K).squeeze(1)
+        return A_one_hot, P
+
+    def update(self, loss_matrix, actions, probs):
+        L_t = loss_matrix.to(self.device)
+        G = L_t * actions / probs
+        self.Z = torch.mm(self.W.float(), self.Z.float()) + G
+
+
+def cube_root_scheduler(gamma=0.01):
+    '''Generates a series of exploration ratios'''
+    step = 1
+    while True:
+        yield gamma / step ** (1/3) 
+        step += 1
