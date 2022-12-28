@@ -1,11 +1,12 @@
 import wandb
 import torch
 import numpy as np
-from federatedbandit.env import HomoBandit
+import federatedbandit.agent as fba
+import federatedbandit.env as fbe
 from PIL import Image
+from tqdm import tqdm
 from matplotlib import cm
 from torch.utils.data import DataLoader
-from federatedbandit.agent import FedExp3, cube_root_scheduler
 
 
 def main(config):
@@ -18,7 +19,7 @@ def main(config):
     env = config['env'].split('-')[0]
     if env == "HomoBandit":
         train_loader = DataLoader(
-            HomoBandit(
+            fbe.HomoBandit(
                 config['horizon'], 
                 config['n_agents'], 
                 config['n_arms'],
@@ -33,25 +34,25 @@ def main(config):
 
     # Create FedExp3
     if config['gossip'] == "COMPLETE":
-        agent = FedExp3(
+        agent = fba.FedExp3(
             config['n_agents'],
             config['n_arms'],
             torch.ones( # complete random communication
                 [config['n_agents'], config['n_agents']], device=config['device']
             ) / config['n_agents'], 
             config['lr'],
-            expr_scheduler=cube_root_scheduler(config['gamma']),
+            expr_scheduler=fb.agent.cube_root_scheduler(config['gamma']),
             device=config['device']
             )
     elif config['gossip'] == "NONE":
-        agent = FedExp3(
+        agent = fba.FedExp3(
             config['n_agents'],
             config['n_arms'],
             torch.eye( # no communication
                 config['n_agents'], device=config['device']
             ), 
             config['lr'],
-            expr_scheduler=cube_root_scheduler(config['gamma']),
+            expr_scheduler=fba.cube_root_scheduler(config['gamma']),
             device=config['device']
             )
     else:
@@ -66,7 +67,8 @@ def main(config):
         prob_imgs = []
 
     cumu_loss = 0
-    for i, loss_matrix in enumerate(train_loader):
+    rounds = len(train_loader)
+    for i, loss_matrix in tqdm(enumerate(train_loader), total=rounds):
         L_t = torch.squeeze(loss_matrix, 0).to(config['device'])
         # make actions
         actions, probs = agent.action(rng)
@@ -100,11 +102,11 @@ def main(config):
 if __name__ == "__main__":
     config = dict(
         proj = 'FedExp3',
-        env = 'HomoBandit-10',
+        env = 'HomoBandit-0',
         gossip = 'NONE',
         n_agents = 10,
         n_arms = 50,                 
-        horizon = 400,                  
+        horizon = 4000,                  
         lr = .1,
         gamma = 0.01,
         seed = 0,
