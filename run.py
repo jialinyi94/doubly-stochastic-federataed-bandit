@@ -1,11 +1,11 @@
 import wandb
 import torch
 import numpy as np
-from env.bandit import HomoBandit
+from federatedbandit.env import HomoBandit
 from PIL import Image
 from matplotlib import cm
 from torch.utils.data import DataLoader
-from federatedbandit import FedExp3, cube_root_scheduler
+from federatedbandit.agent import FedExp3, cube_root_scheduler
 
 
 def main(config):
@@ -96,3 +96,19 @@ def main(config):
     if config['WANDB']:
         wandb.log({"visual_probs": prob_imgs})
         wandb.finish()
+
+if __name__ == "__main__":
+    config = dict(
+        proj = 'FedExp3',
+        env = 'HomoBandit-10',
+        gossip = 'NONE',
+        n_agents = 10,
+        n_arms = 50,                 
+        horizon = 400,                  
+        lr = .1,
+        gamma = 0.01,
+        seed = 0,
+        WANDB = True
+    )
+
+    main(config)
