@@ -57,8 +57,12 @@ def main(config):
     comm_net = fba.CommNet(graph)
 
     # Specify the gossip
-    if config['gossip'] == 'MaxDegree':
+    if config['network'] == 'NONE':
+        gossip_numpy = np.eye(config['n_agents'])
+    elif config['gossip'] == 'MaxDegree':
         gossip_numpy = comm_net.max_deg_gossip()
+    elif config['gossip'] == 'Fast-SDP':
+        gossip_numpy = comm_net.fast_gossip('SDP')
     else:
         raise NotImplementedError("The "+config['gossip']+" mechanism has not been implemented.")
     gossip = torch.tensor(gossip_numpy, device=config['device'])
@@ -118,8 +122,8 @@ if __name__ == "__main__":
     config = dict(
         proj = 'FedExp3',
         env = 'HomoBandit-0',
-        network = 'RGG',
-        gossip = 'MaxDegree',
+        network = 'GRID',
+        gossip = 'Fast-SDP',
         n_agents = 16,
         n_arms = 50,                 
         horizon = 4000,                  

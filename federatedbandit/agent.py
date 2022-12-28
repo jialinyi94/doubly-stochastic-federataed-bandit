@@ -38,22 +38,25 @@ class CommNet:
         P = np.eye(len(degrees)) - (D - A) / (max_deg+1)
         return P
 
-    def fast_gossip(self):
-        comple_graph = nx.complement(self.comm_net)
-        n = self.comm_net.number_of_nodes()
-        P = cvxpy.Variable((n, n))
-        e = np.ones(n)
-        obj = cvxpy.Minimize(cvxpy.norm(P - 1.0/n))
-        cnsts = [
-            P*e==e,
-            P.T == P,
-            P >= 0
-        ]
-        for u, v in comple_graph.edges():
-            if u != v: cnsts.append(P[u, v] == 0)
-        prob = cvxpy.Problem(obj, cnsts)
-        prob.solve()
-        return P.value
+    def fast_gossip(self, algo):
+        if algo == 'SDP':
+            comple_graph = nx.complement(self.comm_net)
+            n = self.comm_net.number_of_nodes()
+            P = cvxpy.Variable((n, n))
+            e = np.ones(n)
+            obj = cvxpy.Minimize(cvxpy.norm(P - 1.0/n))
+            cnsts = [
+                P@e==e,
+                P.T == P,
+                P >= 0
+            ]
+            for u, v in comple_graph.edges():
+                if u != v: cnsts.append(P[u, v] == 0)
+            prob = cvxpy.Problem(obj, cnsts)
+            prob.solve()
+            return P.value
+        else:
+            raise NotImplementedError("The "+algo+" method has not been implemented.")
 
 
 
