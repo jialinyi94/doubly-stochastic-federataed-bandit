@@ -42,6 +42,11 @@ def main(config):
                 config['n_agents'], config['n_agents']
             ])
         )
+    elif config['network'] == 'GRID':
+        graph = nx.grid_graph([
+            int(np.sqrt(config['n_agents'])),
+            int(np.sqrt(config['n_agents']))
+        ])
     else:
         raise NotImplementedError("The "+config['network']+" network has not been implemented.")
     comm_net = fba.CommNet(graph)
@@ -108,14 +113,14 @@ if __name__ == "__main__":
     config = dict(
         proj = 'FedExp3',
         env = 'HomoBandit-0',
-        network = 'NONE',
+        network = 'GRID',
         gossip = 'MaxDegree',
-        n_agents = 10,
+        n_agents = 16,
         n_arms = 50,                 
         horizon = 4000,                  
         lr = .1,
         gamma = 0.01,
-        seed = 1,
+        seed = 0,
         WANDB = True
     )
 
