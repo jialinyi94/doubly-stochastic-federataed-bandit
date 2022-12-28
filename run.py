@@ -33,7 +33,7 @@ def main(config):
 
     # Create FedExp3
     if config['gossip'] == "COMPLETE":
-        fedexp3 = FedExp3(
+        agent = FedExp3(
             config['n_agents'],
             config['n_arms'],
             torch.ones( # complete random communication
@@ -44,7 +44,7 @@ def main(config):
             device=config['device']
             )
     elif config['gossip'] == "NONE":
-        fedexp3 = FedExp3(
+        agent = FedExp3(
             config['n_agents'],
             config['n_arms'],
             torch.eye( # no communication
@@ -69,14 +69,14 @@ def main(config):
     for i, loss_matrix in enumerate(train_loader):
         L_t = torch.squeeze(loss_matrix, 0).to(config['device'])
         # make actions
-        actions_fed, probs_fed = fedexp3.action(rng)
+        actions, probs = agent.action(rng)
         # compute cumulative losses
         cumu_loss += torch.matmul(
             torch.mean(L_t, dim=0),
-            torch.transpose(actions_fed.float(), 1, 0)
+            torch.transpose(actions.float(), 1, 0)
         )
         # update
-        fedexp3.update(L_t, actions_fed, probs_fed)
+        agent.update(L_t, actions, probs)
 
         # logging
         if config['WANDB']:
@@ -88,7 +88,7 @@ def main(config):
                 prob_imgs.append(
                     wandb.Image(
                         Image.fromarray(
-                            np.uint8(cm.viridis(probs_fed.tolist())*255)
+                            np.uint8(cm.viridis(probs.tolist())*255)
                         )
                     )
                 )
@@ -108,7 +108,7 @@ if __name__ == "__main__":
         lr = .1,
         gamma = 0.01,
         seed = 0,
-        WANDB = True
+        WANDB = False
     )
 
     main(config)
