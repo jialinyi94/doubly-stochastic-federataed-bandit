@@ -47,6 +47,11 @@ def main(config):
             int(np.sqrt(config['n_agents'])),
             int(np.sqrt(config['n_agents']))
         ])
+    elif config['network'] == 'RGG':
+        r = np.sqrt(np.log(config['n_agents']) ** 1.1 / config['n_agents'])
+        graph = nx.random_geometric_graph(
+            config['n_agents'], r
+        )
     else:
         raise NotImplementedError("The "+config['network']+" network has not been implemented.")
     comm_net = fba.CommNet(graph)
@@ -113,7 +118,7 @@ if __name__ == "__main__":
     config = dict(
         proj = 'FedExp3',
         env = 'HomoBandit-0',
-        network = 'GRID',
+        network = 'RGG',
         gossip = 'MaxDegree',
         n_agents = 16,
         n_arms = 50,                 
