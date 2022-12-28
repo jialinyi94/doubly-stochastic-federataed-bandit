@@ -32,31 +32,27 @@ def main(config):
     else:
         raise NotImplementedError("The "+env+" environment has not been implemented.")
 
-    # Create FedExp3
+    # Specify gossip matrix
     if config['gossip'] == "COMPLETE":
-        agent = fba.FedExp3(
-            config['n_agents'],
-            config['n_arms'],
-            torch.ones( # complete random communication
+        gossip = torch.ones( # complete random communication
                 [config['n_agents'], config['n_agents']], device=config['device']
-            ) / config['n_agents'], 
-            config['lr'],
-            expr_scheduler=fba.cube_root_scheduler(config['gamma']),
-            device=config['device']
-            )
+            ) / config['n_agents']
     elif config['gossip'] == "NONE":
-        agent = fba.FedExp3(
-            config['n_agents'],
-            config['n_arms'],
-            torch.eye( # no communication
+        gossip = torch.eye( # no communication
                 config['n_agents'], device=config['device']
-            ), 
-            config['lr'],
-            expr_scheduler=fba.cube_root_scheduler(config['gamma']),
-            device=config['device']
             )
     else:
         raise NotImplementedError("The "+env+" mechanism has not been implemented.")
+
+    # Create FedExp3
+    agent = fba.FedExp3(
+        config['n_agents'],
+        config['n_arms'],
+        gossip, 
+        config['lr'],
+        expr_scheduler=fba.cube_root_scheduler(config['gamma']),
+        device=config['device']
+    )
 
     
     # Initialize WANDB
@@ -98,12 +94,14 @@ def main(config):
     if config['WANDB']:
         wandb.log({"visual_probs": prob_imgs})
         wandb.finish()
+    
+    print(cumu_loss)
 
 if __name__ == "__main__":
     config = dict(
         proj = 'FedExp3',
         env = 'HomoBandit-0',
-        gossip = 'COMPLETE',
+        gossip = 'NONE',
         n_agents = 10,
         n_arms = 50,                 
         horizon = 4000,                  
