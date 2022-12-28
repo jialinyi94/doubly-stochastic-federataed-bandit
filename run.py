@@ -41,7 +41,7 @@ def main(config):
                 [config['n_agents'], config['n_agents']], device=config['device']
             ) / config['n_agents'], 
             config['lr'],
-            expr_scheduler=fb.agent.cube_root_scheduler(config['gamma']),
+            expr_scheduler=fba.cube_root_scheduler(config['gamma']),
             device=config['device']
             )
     elif config['gossip'] == "NONE":
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     config = dict(
         proj = 'FedExp3',
         env = 'HomoBandit-0',
-        gossip = 'NONE',
+        gossip = 'COMPLETE',
         n_agents = 10,
         n_arms = 50,                 
         horizon = 4000,                  
