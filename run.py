@@ -59,24 +59,33 @@ def main(config):
     best_cumu_loss = train_data.cumloss_of_best_arm()
 
     # Specify communcation network
-
-    if config['network'] == 'COMPLETE':
+    network = config['network'].split('-')[0]
+    if network == 'COMPLETE':
         graph = nx.complete_graph(config['n_agents'])
-    elif config['network'] == 'NONE':
+    elif network == 'NONE':
         graph = nx.from_numpy_array(
             np.zeros([
                 config['n_agents'], config['n_agents']
             ])
         )
-    elif config['network'] == 'GRID':
+    elif network == 'GRID':
         graph = nx.grid_graph([
             int(np.sqrt(config['n_agents'])),
             int(np.sqrt(config['n_agents']))
         ])
-    elif config['network'] == 'RGG':
-        r = np.sqrt(np.log(config['n_agents']) ** 1.1 / config['n_agents'])
+    elif network == 'RGG':
+        r = float(config['network'].split('-')[1])
+        threshold = np.sqrt(np.log(config['n_agents']) ** 1.1 / config['n_agents'])
+        if r  < threshold:
+            raise ValueError(
+                'Please create a r >= ' + str(threshold)
+            )
         graph = nx.random_geometric_graph(
-            config['n_agents'], r
+            config['n_agents'], 
+            r,
+            seed=int(
+                config['network'].split('-')[-1]
+            )
         )
     else:
         raise NotImplementedError("The "+config['network']+" network has not been implemented.")
@@ -150,15 +159,15 @@ if __name__ == "__main__":
     config = dict(
         proj = 'FedExp3',
         env = 'HalfActBandit-1',
-        network = 'NONE',
+        network = 'RGG-0.5-1',
         gossip = 'MaxDegree',
-        n_agents = 900,
+        n_agents = 25,
         n_arms = 20,                 
         horizon = 3000,                  
         lr = .1,
         gamma = 0.01,
         seed = 0,
-        WANDB = False
+        WANDB = True
     )
 
     main(config)
