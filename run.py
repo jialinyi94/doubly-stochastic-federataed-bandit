@@ -19,45 +19,44 @@ def main(config):
     # Create dataset
     env = config['env'].split('-')[0]
     if env == "HomoBandit":
-        train_loader = DataLoader(
-            fbe.HomoBandit(
-                config['horizon'], 
-                config['n_agents'], 
-                config['n_arms'],
-                np.random.default_rng(
-                    int(config['env'].split('-')[1]) # seed of the loss tensor
-                )
-            ),
-            batch_size=1, shuffle=False
+        train_data = fbe.HomoBandit(
+            config['horizon'], 
+            config['n_agents'], 
+            config['n_arms'],
+            np.random.default_rng(
+                int(config['env'].split('-')[1]) # seed of the loss tensor
+            )
         )
     elif env == 'HalfActBandit':
-        train_loader = DataLoader(
-            fbe.StoActBandit(
-                config['horizon'], 
-                config['n_agents'], 
-                config['n_arms'],
-                config['n_agents']//2,               # activation size
-                np.random.default_rng(
-                    int(config['env'].split('-')[1]) # seed of the loss tensor
-                )
-            ),
-            batch_size=1, shuffle=False
+        train_data = fbe.StoActBandit(
+            config['horizon'], 
+            config['n_agents'], 
+            config['n_arms'],
+            config['n_agents']//2,               # activation size
+            np.random.default_rng(
+                int(config['env'].split('-')[1]) # seed of the loss tensor
+            )
         )
     elif env == 'HalfFixActBandit':
-        train_loader = DataLoader(
-            fbe.FixActBandit(
-                config['horizon'], 
-                config['n_agents'], 
-                config['n_arms'],
-                config['n_agents']//2,               # activation size
-                np.random.default_rng(
-                    int(config['env'].split('-')[1]) # seed of the loss tensor
-                )
-            ),
-            batch_size=1, shuffle=False
+        train_data = fbe.FixActBandit(
+            config['horizon'], 
+            config['n_agents'], 
+            config['n_arms'],
+            config['n_agents']//2,               # activation size
+            np.random.default_rng(
+                int(config['env'].split('-')[1]) # seed of the loss tensor
+            )
         )
     else:
         raise NotImplementedError("The "+env+" environment has not been implemented.")
+    
+    train_loader = DataLoader(
+        train_data,
+        batch_size=1, 
+        shuffle=False
+    )
+    # compute cumulative loss of the best arm in hindsight
+    best_cumu_loss = train_data.cumloss_of_best_arm()
 
     # Specify communcation network
     if config['network'] == 'COMPLETE':
@@ -92,6 +91,7 @@ def main(config):
     else:
         raise NotImplementedError("The "+config['gossip']+" mechanism has not been implemented.")
     gossip = torch.tensor(gossip_numpy, device=config['device'])
+    config['spectral_gap'] = spectral_gap
 
     # Create FedExp3
     agent = fba.FedExp3(
@@ -128,8 +128,8 @@ def main(config):
         # logging
         if config['WANDB']:
             wandb.log({
-                'mean': torch.mean(cumu_loss).item(),
-                'max': torch.max(cumu_loss).item(),
+                'mean': torch.mean(cumu_loss).item() - best_cumu_loss[i],
+                'max': torch.max(cumu_loss).item()- best_cumu_loss[i],
             })
             if i % (config['horizon'] // 10) == 0:
                 prob_imgs.append(
@@ -151,13 +151,13 @@ if __name__ == "__main__":
         env = 'HalfFixActBandit-0',
         network = 'NONE',
         gossip = 'MaxDegree',
-        n_agents = 16,
+        n_agents = 25,
         n_arms = 50,                 
-        horizon = 4000,                  
+        horizon = 3000,                  
         lr = .1,
         gamma = 0.01,
         seed = 0,
-        WANDB = True
+        WANDB = False
     )
 
     main(config)
