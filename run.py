@@ -43,6 +43,19 @@ def main(config):
             ),
             batch_size=1, shuffle=False
         )
+    elif env == 'HalfFixActBandit':
+        train_loader = DataLoader(
+            fbe.FixActBandit(
+                config['horizon'], 
+                config['n_agents'], 
+                config['n_arms'],
+                config['n_agents']//2,               # activation size
+                np.random.default_rng(
+                    int(config['env'].split('-')[1]) # seed of the loss tensor
+                )
+            ),
+            batch_size=1, shuffle=False
+        )
     else:
         raise NotImplementedError("The "+env+" environment has not been implemented.")
 
@@ -134,8 +147,8 @@ def main(config):
 if __name__ == "__main__":
     config = dict(
         proj = 'FedExp3',
-        env = 'HalfActBandit-0',
-        network = 'RGG',
+        env = 'HalfFixActBandit-0',
+        network = 'NONE',
         gossip = 'MaxDegree',
         n_agents = 16,
         n_arms = 50,                 
