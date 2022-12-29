@@ -14,3 +14,15 @@ class HomoBandit(Dataset):
         return self.data.shape[0]
     def __getitem__(self, idx):
         return self.data[idx]
+
+class StochasticActivationBandit(HomoBandit):
+    def __init__(self, n_epochs, n_agents, n_arms, activate_size, rng) -> None:
+        super().__init__(n_epochs, n_agents, n_arms, rng)
+        for t in range(n_epochs):
+            non_selected_idx = rng.choice(
+                n_agents,
+                size=n_agents - activate_size,
+                replace=False
+            )
+            self.data[t,non_selected_idx,:] = 0
+            
