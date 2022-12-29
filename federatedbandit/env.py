@@ -17,8 +17,9 @@ class HomoBandit(Dataset):
 
     def least_cumloss(self):
         true_loss = np.mean(self.data, axis=1)
-        cum_losses = np.sum(true_loss, axis=0)
-        return np.min(cum_losses)
+        cum_losses = np.cumsum(true_loss, axis=0)
+        best_arm = np.argmin(cum_losses[-1,])
+        return cum_losses[:,best_arm]
         
 
 class StoActBandit(HomoBandit):
