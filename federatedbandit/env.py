@@ -15,7 +15,7 @@ class HomoBandit(Dataset):
     def __getitem__(self, idx):
         return self.data[idx]
 
-    def least_cumloss(self):
+    def cumloss_of_best_arm(self):
         true_loss = np.mean(self.data, axis=1)
         cum_losses = np.cumsum(true_loss, axis=0)
         best_arm = np.argmin(cum_losses[-1,])
