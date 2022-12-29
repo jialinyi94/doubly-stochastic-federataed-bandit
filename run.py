@@ -148,15 +148,15 @@ if __name__ == "__main__":
     config = dict(
         proj = 'FedExp3',
         env = 'HalfFixActBandit-0',
-        network = 'NONE',
+        network = 'COMPLETE',
         gossip = 'MaxDegree',
-        n_agents = 25,
+        n_agents = 16,
         n_arms = 50,                 
         horizon = 3000,                  
         lr = .1,
         gamma = 0.01,
         seed = 0,
-        WANDB = False
+        WANDB = True
     )
 
     main(config)
