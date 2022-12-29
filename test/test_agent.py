@@ -10,7 +10,8 @@ def test_fast_gossip():
         3: [2, ]
     })
     comm_net = fba.CommNet(g)
-    P = comm_net.fast_gossip()
+    P, gap = comm_net.fast_gossip('SDP', spectral_gap=True)
+    assert gap > 0
     i_row = np.random.randint(0, P.shape[0]-1)
     res = np.sum(P, axis=1)[i_row]
     assert np.isclose(res, 1, rtol=1e-05, atol=1e-08, equal_nan=False)
@@ -26,7 +27,8 @@ def test_fast_gossip_large_graph():
     )
     comm_net = fba.CommNet(graph)
     assert max([d for i, d in graph.degree()]) <= 2*np.sqrt(np.log(n) ** 1.1 * n)
-    P = comm_net.fast_gossip()
+    P, gap= comm_net.fast_gossip('SDP', spectral_gap=True)
+    assert gap > 0
     i_row = np.random.randint(0, P.shape[0]-1)
     res = np.sum(P, axis=1)[i_row]
     assert np.isclose(res, 1, rtol=1e-05, atol=1e-08, equal_nan=False)

@@ -30,15 +30,18 @@ class CommNet:
     def __init__(self, nx_graph) -> None:
         self.comm_net = nx_graph
     
-    def max_deg_gossip(self):
+    def max_deg_gossip(self, spectral_gap=False):
         degrees = [val for (node, val) in self.comm_net.degree()]
         max_deg = max(degrees)
         D = np.diag(degrees)
         A = nx.to_numpy_matrix(self.comm_net)
         P = np.eye(len(degrees)) - (D - A) / (max_deg+1)
+        # spectral gap
+        if spectral_gap:
+            return P, compute_spectral_gap(P)
         return P
 
-    def fast_gossip(self, algo):
+    def fast_gossip(self, algo, spectral_gap=False):
         if algo == 'SDP':
             comple_graph = nx.complement(self.comm_net)
             n = self.comm_net.number_of_nodes()
@@ -54,6 +57,9 @@ class CommNet:
                 if u != v: cnsts.append(P[u, v] == 0)
             prob = cvxpy.Problem(obj, cnsts)
             prob.solve()
+            # spectral gap
+            if spectral_gap:
+                return P.value, compute_spectral_gap(P.value)
             return P.value
         else:
             raise NotImplementedError("The "+algo+" method has not been implemented.")
@@ -67,6 +73,10 @@ def cube_root_scheduler(gamma=0.01):
         yield gamma / step ** (1/3) 
         step += 1
 
+def compute_spectral_gap(P):
+    singular_values = np.linalg.svd(P, compute_uv=False, hermitian=True)
+    gap = 1 - singular_values[1]
+    return gap
 
 if __name__ == "__main__":
     # no communication
