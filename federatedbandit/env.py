@@ -15,6 +15,12 @@ class HomoBandit(Dataset):
     def __getitem__(self, idx):
         return self.data[idx]
 
+    def least_cumloss(self):
+        true_loss = np.mean(self.data, axis=1)
+        cum_losses = np.sum(true_loss, axis=0)
+        return np.min(cum_losses)
+        
+
 class StoActBandit(HomoBandit):
     def __init__(self, n_epochs, n_agents, n_arms, activate_size, rng) -> None:
         super().__init__(n_epochs, n_agents, n_arms, rng)
