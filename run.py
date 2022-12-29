@@ -24,7 +24,7 @@ def main(config):
             config['n_agents'], 
             config['n_arms'],
             np.random.default_rng(
-                int(config['env'].split('-')[1]) # seed of the loss tensor
+                int(config['env'].split('-')[-1]) # seed of the loss tensor
             )
         )
     elif env == 'HalfActBandit':
@@ -59,6 +59,7 @@ def main(config):
     best_cumu_loss = train_data.cumloss_of_best_arm()
 
     # Specify communcation network
+
     if config['network'] == 'COMPLETE':
         graph = nx.complete_graph(config['n_agents'])
     elif config['network'] == 'NONE':
@@ -148,7 +149,7 @@ def main(config):
 if __name__ == "__main__":
     config = dict(
         proj = 'FedExp3',
-        env = 'HomoBandit-0',
+        env = 'HalfActBandit-1',
         network = 'NONE',
         gossip = 'MaxDegree',
         n_agents = 900,
