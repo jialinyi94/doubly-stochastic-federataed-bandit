@@ -87,6 +87,15 @@ def main(config):
                 config['network'].split('-')[-1]
             )
         )
+    elif network == 'ER':
+        p = float(config['network'].split('-')[1])
+        graph = nx.fast_gnp_random_graph(
+            config['n_agents'], 
+            p,
+            seed=int(
+                config['network'].split('-')[-1]
+            )
+        )
     else:
         raise NotImplementedError("The "+config['network']+" network has not been implemented.")
     comm_net = fba.CommNet(graph)
@@ -159,7 +168,7 @@ if __name__ == "__main__":
     config = dict(
         proj = 'FedExp3',
         env = 'HalfActBandit-1',
-        network = 'RGG-0.5-1',
+        network = 'ER-0.5-1',
         gossip = 'MaxDegree',
         n_agents = 25,
         n_arms = 20,                 
