@@ -78,6 +78,22 @@ def compute_spectral_gap(P):
     gap = 1 - singular_values[1]
     return gap
 
+def fedexp3_ub_exact(n_epochs, n_agents, n_arms, spectral_gap, lr_array, gamma_array):
+    C_w = 3 + min(
+        2 * np.log(n_epochs) + np.log(n_agents),
+        np.sqrt(n_agents)
+    ) / spectral_gap
+    lr_last = lr_array[-1]
+    gamma_last = gamma_array[-1]
+    cum_reg = np.log(n_arms) / lr_last
+    for lr, gamma in zip(lr_array, gamma_array):
+        first = n_arms**2/2 * lr / gamma
+        second = n_arms**2 / gamma_last * C_w * lr
+        third = gamma
+        ins = first + second + third
+        cum_reg += ins
+        yield cum_reg
+
 if __name__ == "__main__":
     # no communication
     N = 4

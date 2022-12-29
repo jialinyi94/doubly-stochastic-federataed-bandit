@@ -52,3 +52,24 @@ def test_max_degree_large_graph():
     j_col = np.random.randint(0, P.shape[1]-1)
     res = np.sum(P, axis=0)[j_col]
     assert np.isclose(res, 1, rtol=1e-05, atol=1e-08, equal_nan=False)
+
+def test_fedexp3_ub_exact():
+    n_epochs = 10
+    n_agents = 10
+    n_arms = 3
+    spectral_gap = 1/.4
+    lr_array = [.1] * n_epochs
+    gamma_array = [.01 * 1/(t+1)**(1/3)  for t in range(n_epochs)]
+    cumreg_generator = fba.fedexp3_ub_exact(
+        n_epochs,
+        n_agents,
+        n_arms,
+        spectral_gap,
+        lr_array,
+        gamma_array
+    )
+    curr = 0
+    for _ in range(n_epochs):
+        prev = curr
+        curr = next(cumreg_generator)
+        assert curr >= prev
