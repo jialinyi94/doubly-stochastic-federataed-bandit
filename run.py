@@ -91,7 +91,6 @@ def main(config):
     else:
         raise NotImplementedError("The "+config['gossip']+" mechanism has not been implemented.")
     gossip = torch.tensor(gossip_numpy, device=config['device'])
-    config['spectral_gap'] = spectral_gap
 
     # Create FedExp3
     agent = fba.FedExp3(
