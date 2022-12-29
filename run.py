@@ -86,9 +86,9 @@ def main(config):
     if config['network'] == 'NONE':
         gossip_numpy = np.eye(config['n_agents'])
     elif config['gossip'] == 'MaxDegree':
-        gossip_numpy = comm_net.max_deg_gossip()
+        gossip_numpy, spectral_gap = comm_net.max_deg_gossip(spectral_gap=True)
     elif config['gossip'] == 'Fast-SDP':
-        gossip_numpy = comm_net.fast_gossip('SDP')
+        gossip_numpy, spectral_gap = comm_net.fast_gossip('SDP', spectral_gap=True)
     else:
         raise NotImplementedError("The "+config['gossip']+" mechanism has not been implemented.")
     gossip = torch.tensor(gossip_numpy, device=config['device'])
@@ -142,6 +142,7 @@ def main(config):
 
     if config['WANDB']:
         wandb.log({"visual_probs": prob_imgs})
+        wandb.log({'spectral_gap': spectral_gap})
         wandb.finish()
 
 if __name__ == "__main__":
