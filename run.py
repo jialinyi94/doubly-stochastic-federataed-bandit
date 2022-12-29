@@ -84,6 +84,7 @@ def main(config):
     # Specify the gossip
     if config['network'] == 'NONE':
         gossip_numpy = np.eye(config['n_agents'])
+        spectral_gap = 0
     elif config['gossip'] == 'MaxDegree':
         gossip_numpy, spectral_gap = comm_net.max_deg_gossip(spectral_gap=True)
     elif config['gossip'] == 'Fast-SDP':
@@ -147,16 +148,16 @@ def main(config):
 if __name__ == "__main__":
     config = dict(
         proj = 'FedExp3',
-        env = 'HalfFixActBandit-0',
-        network = 'COMPLETE',
+        env = 'HomoBandit-0',
+        network = 'NONE',
         gossip = 'MaxDegree',
-        n_agents = 16,
-        n_arms = 50,                 
+        n_agents = 900,
+        n_arms = 20,                 
         horizon = 3000,                  
         lr = .1,
         gamma = 0.01,
         seed = 0,
-        WANDB = True
+        WANDB = False
     )
 
     main(config)
