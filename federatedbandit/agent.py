@@ -34,7 +34,7 @@ class CommNet:
         degrees = [val for (node, val) in self.comm_net.degree()]
         max_deg = max(degrees)
         D = np.diag(degrees)
-        A = nx.to_numpy_matrix(self.comm_net)
+        A = nx.to_numpy_array(self.comm_net)
         P = np.eye(len(degrees)) - (D - A) / (max_deg+1)
         # spectral gap
         if spectral_gap:
