@@ -15,7 +15,7 @@ class HomoBandit(Dataset):
     def __getitem__(self, idx):
         return self.data[idx]
 
-class StochasticActivationBandit(HomoBandit):
+class StoActBandit(HomoBandit):
     def __init__(self, n_epochs, n_agents, n_arms, activate_size, rng) -> None:
         super().__init__(n_epochs, n_agents, n_arms, rng)
         for t in range(n_epochs):
