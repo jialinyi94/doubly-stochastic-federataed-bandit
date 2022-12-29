@@ -25,4 +25,9 @@ class StoActBandit(HomoBandit):
                 replace=False
             )
             self.data[t,non_selected_idx,:] = 0
+
+class FixActBandit(HomoBandit):
+    def __init__(self, n_epochs, n_agents, n_arms, activate_size, rng) -> None:
+        super().__init__(n_epochs, n_agents, n_arms, rng)
+        self.data[:,activate_size:,:] = 0
             
