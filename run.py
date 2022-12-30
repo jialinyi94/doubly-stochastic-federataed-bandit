@@ -126,7 +126,10 @@ def main(config):
     # Initialize WANDB
     if config['WANDB']:
         wandb.init(
-            project=config['proj'], reinit=True, config=config
+            project=config['proj'], 
+            reinit=True, 
+            config=config, 
+            job_type=config['jobtype']
         )
         prob_imgs = []
 
@@ -168,16 +171,17 @@ if __name__ == "__main__":
     # generate single run
     config = dict(
         proj = 'FedExp3',
-        env = 'HalfActBandit-1',
-        network = 'RGG-0.1-1',
+        env = 'HalfActBandit-5',
+        network = 'RGG-0.2-0',
         gossip = 'MaxDegree',
-        n_agents = 3600,
+        n_agents = 600,
         n_arms = 20,                 
         horizon = 3000,                  
         lr = .1,
         gamma = 0.01,
         seed = 0,
-        WANDB = True
+        WANDB = True,
+        jobtype = 'test'
     )
     main(config)
 
