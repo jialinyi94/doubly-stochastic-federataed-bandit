@@ -170,8 +170,8 @@ if __name__ == "__main__":
     #     proj = 'FedExp3',
     #     env = 'HalfActBandit-1',
     #     network = 'RGG-0.1-1',
-    #     gossip = 'Fast-SDP',
-    #     n_agents = 36,
+    #     gossip = 'MaxDegree',
+    #     n_agents = 1600,
     #     n_arms = 20,                 
     #     horizon = 3000,                  
     #     lr = .1,
@@ -188,7 +188,7 @@ if __name__ == "__main__":
         env = None,
         network = None,
         gossip = None,
-        n_agents = 36,
+        n_agents = 1600,
         n_arms = 20,                 
         horizon = 3000,                  
         lr = .1,
@@ -206,9 +206,9 @@ if __name__ == "__main__":
         'GRID',
         'COMPLETE'
     ] + [
-        'RGG-0.{0}-0'.format(i) for i in range(1,10)
+        'RGG-0.{0}-0'.format(i) for i in range(2,10)
     ] + [
-        'ER-0.{0}-0'.format(i) for i in range(1,10)
+        'ER-0.{0}-0'.format(i) for i in range(2,10)
     ]
 
     gossip_list = [
