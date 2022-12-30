@@ -161,7 +161,7 @@ def main(config):
 
     if config['WANDB']:
         wandb.log({"visual_probs": prob_imgs})
-        wandb.log({'spectral_gap': spectral_gap})
+        wandb.log({'mixing_time': spectral_gap ** (-1/3)})
         wandb.finish()
 
 if __name__ == "__main__":
@@ -182,9 +182,9 @@ if __name__ == "__main__":
     # main(config)
 
     # repeated group simulations
-    n_reps = 10
+    n_reps = 1
     config = dict(
-        proj = 'FedExp3-simulation',
+        proj = 'FedExp3',
         env = None,
         network = None,
         gossip = None,
@@ -198,11 +198,11 @@ if __name__ == "__main__":
     )
 
     env_list = [
-        'StoActBandit'
+        'HalfActBandit-0'
     ]
 
     network_list = [
-        'NONE',
+        # 'NONE',
         'GRID',
         'COMPLETE'
     ] + [
@@ -213,7 +213,7 @@ if __name__ == "__main__":
 
     gossip_list = [
         'MaxDegree',
-        'Fast-SDP'
+        # 'Fast-SDP'
     ]
 
     for e in env_list:
