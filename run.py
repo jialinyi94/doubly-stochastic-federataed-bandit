@@ -47,6 +47,9 @@ def main(config):
                 int(config['env'].split('-')[1]) # seed of the loss tensor
             )
         )
+    elif env == 'MovieLens':
+        train_data = fbe.MovieLens()
+        config['horizon'], config['n_agents'], config['n_arms'] = train_data.data.shape
     else:
         raise NotImplementedError("The "+env+" environment has not been implemented.")
     
@@ -175,17 +178,17 @@ if __name__ == "__main__":
     # generate single run
     config = dict(
         proj = 'FedExp3',
-        env = 'HalfActBandit-5',
-        network = 'RGG-0.2-0',
+        env = 'MovieLens',
+        network = 'NONE',
         gossip = 'MaxDegree',
-        n_agents = 600,
-        n_arms = 20,                 
-        horizon = 3000,                  
+        n_agents = None,
+        n_arms = None,                 
+        horizon = None,                  
         lr = .1,
         gamma = 0.01,
         seed = 0,
         WANDB = True,
-        jobtype = 'test'
+        jobtype = 'real_data'
     )
     main(config)
 
