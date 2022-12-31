@@ -1,9 +1,7 @@
 import os, sys
-import datetime
 import numpy as np
 import pandas as pd
 from torch.utils.data import Dataset
-from tqdm import tqdm
 
 class DoubleAdvBandit(Dataset):
     def __len__(self):
@@ -49,19 +47,6 @@ class FixActBandit(HomoBandit):
 class MovieLens(DoubleAdvBandit):
     def __init__(self) -> None:
         super().__init__()
-        self.genres = ['Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime',
-            'Drama', 'Fantasy', 'Film-Noir', 'Horror', 'IMAX', 'Musical',
-            'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western',
-            'Documentary', '(no genres listed)'
-        ]
-        start = '1996-03-29'
-        end = '2018-09-24'
-        self.start_date = datetime.datetime.strptime(start, '%Y-%m-%d').date()
-        self.end_date = datetime.datetime.strptime(end, '%Y-%m-%d').date()
-        delta = self.end_date - self.start_date
-        self.n_epochs = delta.days + 1
-        self.n_agents = 610
-        self.n_arms = len(self.genres)
         path_to_MovieLens = os.path.join(
             os.path.dirname(__file__),
             '../MovieLens/'
@@ -73,39 +58,98 @@ class MovieLens(DoubleAdvBandit):
         try:
             with open(path_to_npy_data, 'rb') as f:
                 self.data = np.load(f)
+                self.n_epochs, self.n_agents, self.n_arms = self.data.shape
+                self.genres = ['Action',
+                    'Adventure',
+                    'Animation',
+                    'Children',
+                    'Comedy',
+                    'Crime',
+                    'Drama',
+                    'Fantasy',
+                    'Film-Noir',
+                    'Horror',
+                    'Musical',
+                    'Mystery',
+                    'Romance',
+                    'Sci-Fi',
+                    'Thriller',
+                    'War',
+                    'Western',
+                    'Documentary',
+                    'IMAX',
+                    '(no genres listed)'
+                ]
         except FileNotFoundError:
             if query_yes_no("Do you want to generate the loss data for MovieLens?"):
-                pkldata = pd.read_pickle(
+                movies_df = pd.read_csv(
                     os.path.join(
-                        os.path.dirname(__file__),
-                        '../MovieLens/MovieLens_loss.pkl'
+                        path_to_MovieLens,
+                        'movies.csv'
                     )
                 )
-                self.data = np.zeros(
-                    (
-                        self.n_epochs,
-                        self.n_agents,
-                        self.n_arms
-                    ),
-                    dtype=np.float32
+                ratings_df = pd.read_csv(
+                    os.path.join(
+                        path_to_MovieLens,
+                        'ratings.csv'
+                    )
                 )
-                for index in tqdm(range(self.n_epochs)):
-                    today = self.start_date + datetime.timedelta(days=index)
-                    for i in range(self.n_agents):
-                        for j, genre in enumerate(self.genres):
-                            key = (str(today), i+1, genre)
-                            if key in pkldata.index:
-                                self.data[index, i, j] = pkldata['loss'][key]
+                ratings_df = pd.merge(
+                    ratings_df,
+                    movies_df,
+                    on = 'movieId'
+                )
+                ratings_df['genres'] = ratings_df['genres'].apply(
+                    lambda row: row.split('|')
+                )
+                ratings_df = ratings_df.explode('genres').sort_values(['timestamp', 'userId', 'genres'])
+                ratings_gb = ratings_df.groupby(['userId', 'genres'])['rating'].aggregate(list).reset_index()
+                ratings_gb['rating'] = ratings_gb['rating'].apply(
+                    lambda row: [(v, i) for i, v in enumerate(row)]
+                )
+                ratings_gb = ratings_gb.explode('rating')
+                ratings_gb['epoch'] = ratings_gb['rating'].apply(
+                    lambda row: row[-1]
+                )
+                ratings_gb['rating'] = ratings_gb['rating'].apply(
+                    lambda row: row[0]
+                )
+                ratings_gb.reset_index(inplace=True)
+                all_df = pd.DataFrame(
+                    [{
+                        'userId': list(range(1, ratings_gb['userId'].max()+1)),
+                        'genres': list(ratings_gb['genres'].unique()),
+                        'epoch': list(range(ratings_gb['epoch'].max()+1))
+                    }]
+                )
+                all_df = all_df.explode(['epoch'])
+                all_df = all_df.explode(['userId'])
+                all_df = all_df.explode(['genres'])
+                all_df = pd.merge(
+                    all_df,
+                    ratings_gb,
+                    how='left',
+                    on = ['userId', 'genres', 'epoch']
+                )
+                all_df.fillna(
+                    value = (ratings_df['rating'].max() + ratings_df['rating'].min()) / 2,
+                    inplace = True
+                )
+                ratings = all_df['rating'].to_numpy(dtype=np.float32)
+                losses = (ratings.max() + ratings.min() - ratings) / ratings.max()
+                losses = losses.reshape(
+                    ratings_gb['epoch'].max()+1,
+                    ratings_gb['userId'].max(),
+                    len(ratings_gb['genres'].unique()),
+                    order='C'
+                )
+                self.data = losses
+                self.n_epochs, self.n_agents, self.n_arms = losses.shape
+                self.genres = all_df.head(20)['genres'].values.tolist()
                 if query_yes_no("Do you want to save MovieLens_loss.npy?"):
                     with open(path_to_npy_data, 'wb') as f:
                         np.save(f, self.data)
                     print('Data saved: ' + path_to_npy_data)
-
-    def get_loss_by_key(self, key):
-        date_str, u_id, genre = key
-        date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
-        delta = date - self.start_date
-        return self.data[delta.days, u_id-1, self.get_armId(genre)]
 
     def get_armId(self, genre):
         return self.genres.index(genre)
@@ -113,7 +157,8 @@ class MovieLens(DoubleAdvBandit):
     def get_genre(self, arm_id):
         return self.genres[arm_id]
 
-                
+    def rating_to_loss(self, rating, r_max=5, r_min=.5):
+        return (r_max + r_min - rating) / r_max
 
 
 def query_yes_no(question, default="yes"):
