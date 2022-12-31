@@ -56,7 +56,7 @@ def main(config):
         shuffle=False
     )
     # compute cumulative loss of the best arm in hindsight
-    best_cumu_loss = train_data.cumloss_of_best_arm()
+    best_cumu_loss, _ = train_data.cumloss_of_best_arm()
 
     # Specify communcation network
     network = config['network'].split('-')[0]

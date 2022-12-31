@@ -15,7 +15,7 @@ class DoubleAdvBandit(Dataset):
         true_loss = np.mean(self.data, axis=1)
         cum_losses = np.cumsum(true_loss, axis=0)
         best_arm = np.argmin(cum_losses[-1,])
-        return cum_losses[:,best_arm]
+        return cum_losses[:,best_arm], best_arm
 
 class HomoBandit(DoubleAdvBandit):
     def __init__(self, n_epochs, n_agents, n_arms, rng) -> None:
@@ -109,6 +109,9 @@ class MovieLens(DoubleAdvBandit):
 
     def get_armId(self, genre):
         return self.genres.index(genre)
+
+    def get_genre(self, arm_id):
+        return self.genres[arm_id]
 
                 
 

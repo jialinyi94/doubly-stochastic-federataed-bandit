@@ -37,7 +37,8 @@ def test_least_cum_loss(n_epochs=1000, n_agents=16, n_arms=50, seed=0):
         n_arms,
         np.random.default_rng(seed)
     )
-    res = train_data.cumloss_of_best_arm()[-1]
+    cum_losses, _ = train_data.cumloss_of_best_arm()
+    res = cum_losses[-1]
     assert np.isclose(res, 0, rtol=1e-05, atol=1e-08, equal_nan=False)
 
 
@@ -67,3 +68,8 @@ def test_movie_lens_random_access(excution_number = 10):
         res = data.get_loss_by_key(row.index.values[0])
         ans = row['loss'][row.index.values[0]]
         assert  np.isclose(res, ans, rtol=1e-05, atol=1e-08, equal_nan=False)
+
+# def test_movie_lens_best_arm():
+#     data = fbe.MovieLens()
+#     cum_losses, arm_id = data.cumloss_of_best_arm()
+#     data.get_genre(arm_id)
