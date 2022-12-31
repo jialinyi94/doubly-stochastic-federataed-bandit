@@ -39,14 +39,14 @@ def test_least_cum_loss(n_epochs=1000, n_agents=16, n_arms=50, seed=0):
     assert np.isclose(res, 0, rtol=1e-05, atol=1e-08, equal_nan=False)
 
 
-def test_movie_lens():
-    data = fbe.MovieLens()
-    assert len(data) == 8215
-    res = data.__getitem__(0)[428, data.get_armId('Action')]
-    assert np.isclose(res, 0.323529, rtol=1e-05, atol=1e-08, equal_nan=False)
-    res = data.__getitem__(0)[428, data.get_armId('Animation')]
-    assert np.isclose(res, 0.166667, rtol=1e-05, atol=1e-08, equal_nan=False)
-    res = data.__getitem__(data.T-1)[513, data.get_armId('Action')]
-    assert np.isclose(res, 0.700000, rtol=1e-05, atol=1e-08, equal_nan=False)
-    res = data.__getitem__(data.T-1)[513, data.get_armId('Documentary')]
-    assert np.isclose(res, 0.300000, rtol=1e-05, atol=1e-08, equal_nan=False)
+# def test_movie_lens():
+#     data = fbe.MovieLens()
+#     assert len(data) == 8215
+#     res = data.__getitem__(0)[428, data.get_armId('Action')]
+#     assert np.isclose(res, 0.323529, rtol=1e-05, atol=1e-08, equal_nan=False)
+#     res = data.__getitem__(0)[428, data.get_armId('Animation')]
+#     assert np.isclose(res, 0.166667, rtol=1e-05, atol=1e-08, equal_nan=False)
+#     res = data.__getitem__(data.T-1)[513, data.get_armId('Action')]
+#     assert np.isclose(res, 0.700000, rtol=1e-05, atol=1e-08, equal_nan=False)
+#     res = data.__getitem__(data.T-1)[513, data.get_armId('Documentary')]
+#     assert np.isclose(res, 0.300000, rtol=1e-05, atol=1e-08, equal_nan=False)
