@@ -164,7 +164,11 @@ def main(config):
 
     if config['WANDB']:
         wandb.log({"visual_probs": prob_imgs})
-        wandb.log({'mixing_time': spectral_gap ** (-1/3)})
+        if np.isclose(spectral_gap, 0, rtol=1e-05, atol=1e-08, equal_nan=True):
+            mixing_time = np.Inf
+        else:
+            mixing_time = spectral_gap ** (-1/3)
+        wandb.log({'mixing_time': mixing_time})
         wandb.finish()
 
 if __name__ == "__main__":
