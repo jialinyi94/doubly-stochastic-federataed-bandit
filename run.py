@@ -132,7 +132,7 @@ def main(config):
             project=config['proj'], 
             reinit=True, 
             config=config, 
-            job_type=config['jobtype']
+            job_type=config.get('jobtype', 'formal')
         )
         prob_imgs = []
 
@@ -175,64 +175,64 @@ def main(config):
         wandb.finish()
 
 if __name__ == "__main__":
-    # generate single run
-    config = dict(
-        proj = 'FedExp3',
-        env = 'MovieLens',
-        network = 'NONE',
-        gossip = 'MaxDegree',
-        n_agents = None,
-        n_arms = None,                 
-        horizon = None,                  
-        lr = .1,
-        gamma = 0.01,
-        seed = 0,
-        WANDB = True,
-        jobtype = 'real_data'
-    )
-    main(config)
-
-    # # repeated group simulations
-    # n_reps = 1
+    # # generate single run
     # config = dict(
     #     proj = 'FedExp3',
-    #     env = None,
-    #     network = None,
-    #     gossip = None,
-    #     n_agents = 1600,
-    #     n_arms = 20,                 
+    #     env = 'HalfActBandit-0',
+    #     network = 'GRID',
+    #     gossip = 'Fast-SDP',
+    #     n_agents = 100,
+    #     n_arms = 80,                 
     #     horizon = 3000,                  
     #     lr = .1,
     #     gamma = 0.01,
-    #     seed = None,
-    #     WANDB = True
+    #     seed = 0,
+    #     WANDB = True,
+    #     jobtype = 'test'
     # )
+    # main(config)
 
-    # env_list = [
-    #     'HalfActBandit-0'
-    # ]
+    # repeated group simulations
+    n_reps = 10
+    config = dict(
+        proj = 'icml-2023',
+        env = None,
+        network = None,
+        gossip = None,
+        n_agents = 36,
+        n_arms = 20,                 
+        horizon = 3000,                  
+        lr = .1,
+        gamma = 0.01,
+        seed = None,
+        WANDB = True
+    )
 
-    # network_list = [
-    #     # 'NONE',
-    #     'GRID',
-    #     'COMPLETE'
-    # ] + [
-    #     'RGG-0.{0}-0'.format(i) for i in range(2,10)
-    # ] + [
-    #     'ER-0.{0}-0'.format(i) for i in range(2,10)
-    # ]
+    env_list = [
+        'HalfActBandit-0', 'MovieLens'
+    ]
 
-    # gossip_list = [
-    #     'MaxDegree',
-    #     # 'Fast-SDP'
-    # ]
+    network_list = [
+        'NONE',
+        'GRID',
+        'COMPLETE'
+    ] + [
+        'RGG-0.{0}-0'.format(i) for i in range(2,10)
+    ] + [
+        'ER-0.{0}-0'.format(i) for i in range(2,10)
+    ]
 
-    # for e in env_list:
-    #     config['env'] = e
-    #     for n in network_list:
-    #         config['network'] = n
-    #         for g in gossip_list:
-    #             config['gossip'] = g
-    #             for s in range(n_reps):
-    #                 config['seed'] = s
-    #                 main(config)
+    gossip_list = [
+        'MaxDegree',
+        # 'Fast-SDP'
+    ]
+
+    for e in env_list:
+        config['env'] = e
+        for n in network_list:
+            config['network'] = n
+            for g in gossip_list:
+                config['gossip'] = g
+                for s in range(n_reps):
+                    config['seed'] = s
+                    main(config)
