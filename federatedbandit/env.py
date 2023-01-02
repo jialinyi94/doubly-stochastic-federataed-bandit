@@ -49,7 +49,7 @@ class RealData(DoubleAdvBandit):
         super().__init__()
         try:
             with open(file, 'rb') as f:
-                self.data = np.load(f)
+                self.data = np.load(f).astype(np.float32)
                 self.n_epochs, self.n_agents, self.n_arms = self.data.shape
                 self.genres = genres
                 self.r_min, self.r_max = rate_min, rate_max
