@@ -101,7 +101,7 @@ class GUCB:
                 max_trials = np.max(trials[adj[v]], axis=0) 
                 condition = trials[v] < (max_trials- n_agents)
                 if np.any(condition):
-                    actions[v] = np.where(condition, trials[v])
+                    actions[v] = np.nonzero(condition)[0][0]
             actions = torch.tensor(actions, device=self.device)
         else:
             actions = torch.tensor([self.t] * n_agents) 
