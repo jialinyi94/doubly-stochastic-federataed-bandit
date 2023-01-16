@@ -115,15 +115,25 @@ def main(config):
         raise NotImplementedError("The "+config['gossip']+" mechanism has not been implemented.")
     gossip = torch.tensor(gossip_numpy, device=config['device'])
 
-    # Create FedExp3
-    agent = fba.FedExp3(
-        config['n_agents'],
-        config['n_arms'],
-        gossip, 
-        config['lr'],
-        expr_scheduler=fba.cube_root_scheduler(config['gamma']),
-        device=config['device']
-    )
+    # Specify the algorithm
+    if config['algo'] == 'FedExp3':
+        # Create FedExp3
+        agent = fba.FedExp3(
+            config['n_agents'],
+            config['n_arms'],
+            gossip, 
+            config['lr'],
+            expr_scheduler=fba.cube_root_scheduler(config['gamma']),
+            device=config['device']
+        )
+    elif config['algo'] == 'GUCB':
+        # Create GUCB
+        agent = fba.GUCB(
+            config['n_agents'],
+            config['n_arms'],
+            gossip,
+            device=config['device']
+        )
 
     
     # Initialize WANDB
@@ -182,13 +192,13 @@ if __name__ == "__main__":
         env = 'HalfActBandit-0',
         network = 'GRID',
         gossip = 'MaxDegree',
-        n_agents = 5,
-        n_arms = 5,                 
+        n_agents = 36,
+        n_arms = 20,                 
         horizon = 3000,                  
         lr = .1,
         gamma = 0.01,
         seed = 0,
-        WANDB = False,
+        WANDB = True,
         jobtype = 'test'
     )
     main(config)

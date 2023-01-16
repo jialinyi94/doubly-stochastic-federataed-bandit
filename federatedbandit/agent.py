@@ -66,35 +66,40 @@ class CommNet:
 
 class GUCB:
     def __init__(self, n_agents, n_arms, gossip_matrix, device):
-        self.theta = np.zeros([n_agents, n_arms], device=device)
-        self.trials = np.zeros([n_agents, n_arms], device=device)
+        self.theta = torch.zeros([n_agents, n_arms], device=device)
+        self.trials = torch.zeros([n_agents, n_arms], device=device)
         self.W = gossip_matrix
-        self.X = np.zeros([n_agents, n_arms], device=device)
+        self.X = torch.zeros([n_agents, n_arms], device=device)
+        self.device = device
         # time step
         self.t = 0
     
-    def action(self):
-        n_agents, n_arms = self.theta.size
+    def action(self, rng):
+        n_agents, n_arms = self.theta.shape
         if self.t > n_arms - 1:
             # UCB
             alpha = 64 / n_agents**17
-            C = (2*n_agents / self.trials * np.log(self.t+1))**.5 + alpha
-            Q = self.theta + C
-            actions = np.argmax(Q, axis=1)
+            C = .04*(2*n_agents / self.trials * np.log(self.t+1))**.5 + alpha
+            Q = self.theta - C
+            actions = torch.argmin(Q, axis=1)
         else:
-            actions = [self.t] * n_agents
-        action_one_hot = torch.nn.functional.one_hot(actions, num_classes=n_arms).squeeze(1)
+            actions = torch.tensor([self.t] * n_agents) 
+        action_one_hot = torch.nn.functional.one_hot(actions, num_classes=n_arms).squeeze(1).to(self.device)
         return action_one_hot, action_one_hot
 
     def update(self, loss_matrix, actions, probs):
-        mean_estimator = self.X
+        n_arms = loss_matrix.shape[-1]
+        self.theta = torch.mm(self.W.float(), self.theta.float()) - self.X
         cumloss = self.X * self.trials + loss_matrix * actions
         # update trials
         self.trials += probs
         # update X
-        self.X = cumloss / self.trials
+        if self.t > n_arms - 1:
+            self.X = cumloss / self.trials
+        else:
+            self.X += loss_matrix * actions
         # update theta
-        self.theta = np.dot(self.W, self.theta) + self.X - mean_estimator
+        self.theta += self.X
         # update time step
         self.t += 1
         
