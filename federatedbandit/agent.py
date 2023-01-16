@@ -79,9 +79,19 @@ class GUCB:
         if self.t > n_arms - 1:
             # UCB
             alpha = 64 / n_agents**17
-            C = .04*(2*n_agents / self.trials * np.log(self.t+1))**.5 + alpha
+            C = (2*n_agents / self.trials * np.log(self.t+1))**.5 + alpha
             Q = self.theta - C
-            actions = torch.argmin(Q, axis=1)
+            actions = torch.argmin(Q, axis=1).to('cpu')
+            actions = actions.numpy()
+            # local consistency
+            trials = self.trials.to('cpu').numpy()
+            adj = self.W.to('cpu').numpy() > 1e-8
+            for v in range(n_agents):
+                max_trials = np.max(trials[adj[v]], axis=0) 
+                condition = trials[v] < (max_trials- n_agents)
+                if np.any(condition):
+                    actions[v] = np.where(condition, trials[v])
+            actions = torch.tensor(actions, device=self.device)
         else:
             actions = torch.tensor([self.t] * n_agents) 
         action_one_hot = torch.nn.functional.one_hot(actions, num_classes=n_arms).squeeze(1).to(self.device)
