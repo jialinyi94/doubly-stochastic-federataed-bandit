@@ -64,6 +64,40 @@ class CommNet:
         else:
             raise NotImplementedError("The "+algo+" method has not been implemented.")
 
+class GUCB:
+    def __init__(self, n_agents, n_arms, gossip_matrix, device):
+        self.theta = np.zeros([n_agents, n_arms], device=device)
+        self.trials = np.zeros([n_agents, n_arms], device=device)
+        self.W = gossip_matrix
+        self.X = np.zeros([n_agents, n_arms], device=device)
+        # time step
+        self.t = 0
+    
+    def action(self):
+        n_agents, n_arms = self.theta.size
+        if self.t > n_arms - 1:
+            # UCB
+            alpha = 64 / n_agents**17
+            C = (2*n_agents / self.trials * np.log(self.t+1))**.5 + alpha
+            Q = self.theta + C
+            actions = np.argmax(Q, axis=1)
+        else:
+            actions = [self.t] * n_agents
+        action_one_hot = torch.nn.functional.one_hot(actions, num_classes=n_arms).squeeze(1)
+        return action_one_hot, action_one_hot
+
+    def update(self, loss_matrix, actions, probs):
+        mean_estimator = self.X
+        cumloss = self.X * self.trials + loss_matrix * actions
+        # update trials
+        self.trials += probs
+        # update X
+        self.X = cumloss / self.trials
+        # update theta
+        self.theta = np.dot(self.W, self.theta) + self.X - mean_estimator
+        # update time step
+        self.t += 1
+        
 
 
 def cube_root_scheduler(gamma=0.01):
