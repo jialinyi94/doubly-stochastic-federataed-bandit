@@ -111,6 +111,8 @@ def main(config):
         gossip_numpy, spectral_gap = comm_net.max_deg_gossip(spectral_gap=True)
     elif config['gossip'] == 'Fast-SDP':
         gossip_numpy, spectral_gap = comm_net.fast_gossip('SDP', spectral_gap=True)
+    elif config['gossip'] == 'P2P':
+        gossip_numpy, spectral_gap = comm_net.p2p_gossip(spectral_gap=True)
     else:
         raise NotImplementedError("The "+config['gossip']+" mechanism has not been implemented.")
     gossip = torch.tensor(gossip_numpy, device=config['device'])
@@ -189,10 +191,10 @@ if __name__ == "__main__":
     config = dict(
         proj = 'FedExp3',
         algo = 'GUCB',
-        env = 'MovieLens',
-        network = 'GRID',
+        env = 'HomoBandit-1',
+        network = 'NONE',
         gossip = 'MaxDegree',
-        n_agents = 3364,
+        n_agents = 1,
         n_arms = 20,                 
         horizon = 12800,                  
         lr = .1,

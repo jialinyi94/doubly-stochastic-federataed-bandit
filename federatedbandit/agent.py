@@ -41,6 +41,17 @@ class CommNet:
             return P, compute_spectral_gap(P)
         return P
 
+    def p2p_gossip(self, spectral_gap=False):
+        n_edges = self.comm_net.number_of_edges()
+        degrees = [val for (node, val) in self.comm_net.degree()]
+        D = np.diag(degrees)
+        A = nx.to_numpy_array(self.comm_net)
+        P = np.eye(len(degrees)) - (D - A) / (2*n_edges)
+        # spectral gap
+        if spectral_gap:
+            return P, compute_spectral_gap(P)
+        return P
+
     def fast_gossip(self, algo, spectral_gap=False):
         if algo == 'SDP':
             comple_graph = nx.complement(self.comm_net)
@@ -81,9 +92,9 @@ class GUCB:
             alpha = 64 / n_agents**17
             C = (2*n_agents / self.trials * np.log(self.t+1))**.5 + alpha
             Q = self.theta - C
-            actions = torch.argmin(Q, axis=1).to('cpu')
-            actions = actions.numpy()
+            actions = torch.argmin(Q, axis=1)
             # local consistency
+            actions = actions.to('cpu').numpy()
             trials = self.trials.to('cpu').numpy()
             adj = self.W.to('cpu').numpy() > 1e-8
             for v in range(n_agents):
