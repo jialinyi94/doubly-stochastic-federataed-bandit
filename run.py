@@ -190,13 +190,13 @@ if __name__ == "__main__":
     # generate single run
     config = dict(
         proj = 'FedExp3',
-        algo = 'GUCB',
-        env = 'HomoBandit-1',
+        algo = 'FedExp3',
+        env = 'MovieLens',
         network = 'COMPLETE',
         gossip = 'P2P',
-        n_agents = 10,
-        n_arms = 10,                 
-        horizon = 200000,                  
+        n_agents = 3364,
+        n_arms = 20,                 
+        horizon = 12800,                  
         lr = .1,
         gamma = 0.01,
         seed = 0,
