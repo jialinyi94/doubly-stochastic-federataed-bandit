@@ -234,10 +234,10 @@ if __name__ == "__main__":
 
     network_list = [
         # 'NONE',
-        'GRID',
+        # 'GRID',
         # 'COMPLETE'
     # ] + [
-    #     'RGG-0.{0}-0'.format(i) for i in range(2,10)
+        'RGG-0.{0}-0'.format(5) #for i in range(2,10)
     # ] + [
     #     'ER-0.{0}-0'.format(i) for i in range(2,10)
     ]
