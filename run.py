@@ -187,65 +187,75 @@ def main(config):
         wandb.finish()
 
 if __name__ == "__main__":
-    # generate single run
+    # # generate single run
+    # config = dict(
+    #     proj = 'FedExp3',
+    #     algo = 'FedExp3',
+    #     env = 'MovieLens',
+    #     network = 'COMPLETE',
+    #     gossip = 'P2P',
+    #     n_agents = 3364,
+    #     n_arms = 20,                 
+    #     horizon = 12800,                  
+    #     lr = .1,
+    #     gamma = 0.01,
+    #     seed = 0,
+    #     WANDB = True,
+    #     jobtype = 'test'
+    # )
+    # main(config)
+
+    # repeated group simulations
+    n_reps = 10
     config = dict(
-        proj = 'FedExp3',
-        algo = 'FedExp3',
-        env = 'MovieLens',
-        network = 'COMPLETE',
-        gossip = 'P2P',
+        proj = 'icml-2023',
+        algo = None,
+        env = None,
+        network = None,
+        gossip = None,
         n_agents = 3364,
         n_arms = 20,                 
         horizon = 12800,                  
         lr = .1,
         gamma = 0.01,
-        seed = 0,
-        WANDB = True,
-        jobtype = 'test'
+        seed = None,
+        WANDB = True
     )
-    main(config)
 
-    # # repeated group simulations
-    # n_reps = 10
-    # config = dict(
-    #     proj = 'icml-2023',
-    #     env = None,
-    #     network = None,
-    #     gossip = None,
-    #     n_agents = 36,
-    #     n_arms = 20,                 
-    #     horizon = 3000,                  
-    #     lr = .1,
-    #     gamma = 0.01,
-    #     seed = None,
-    #     WANDB = True
-    # )
+    algo_list = [
+        'GUCB',
+        'FedExp3'
+    ]
 
-    # env_list = [
-    #     'HalfActBandit-0', 'MovieLens'
-    # ]
+    env_list = [
+        # 'HalfActBandit-0', 
+        'MovieLens'
+    ]
 
-    # network_list = [
-    #     'NONE',
-    #     'GRID',
-    #     'COMPLETE'
+    network_list = [
+        # 'NONE',
+        'GRID',
+        # 'COMPLETE'
     # ] + [
     #     'RGG-0.{0}-0'.format(i) for i in range(2,10)
     # ] + [
     #     'ER-0.{0}-0'.format(i) for i in range(2,10)
-    # ]
+    ]
 
-    # gossip_list = [
-    #     'MaxDegree',
-    #     # 'Fast-SDP'
-    # ]
+    gossip_list = [
+        # 'MaxDegree',
+        # 'Fast-SDP',
+        'P2P'
+    ]
 
-    # for e in env_list:
-    #     config['env'] = e
-    #     for n in network_list:
-    #         config['network'] = n
-    #         for g in gossip_list:
-    #             config['gossip'] = g
-    #             for s in range(n_reps):
-    #                 config['seed'] = s
-    #                 main(config)
+    for s in range(n_reps):
+        config['seed'] = s
+        for alg in algo_list:
+            config['algo'] = alg
+            for e in env_list:
+                config['env'] = e
+                for n in network_list:
+                    config['network'] = n
+                    for g in gossip_list:
+                        config['gossip'] = g
+                        main(config)
